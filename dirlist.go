@@ -33,6 +33,8 @@ func (d *DirList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer file.Close()
+
 	st, err := file.Stat()
 
 	if err != nil {
@@ -65,6 +67,7 @@ func (d *DirList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if err == nil {
 			indexFile = f
+			defer f.Close()
 		}
 
 	}
