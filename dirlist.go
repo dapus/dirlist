@@ -14,7 +14,7 @@ type DirList struct {
 	FS http.FileSystem
 	UrlPrefix string
 	Tpl *template.Template
-	IndexFileName string
+	IndexFiles []string
 }
 
 func (d *DirList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -63,11 +63,24 @@ func (d *DirList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var indexFile http.File
 	{
-		f, err := d.FS.Open(urlPath + d.IndexFileName)
+		var indexFileName string
 
-		if err == nil {
-			indexFile = f
-			defer f.Close()
+		for _, fn := range d.IndexFiles {
+			for _, f := range files {
+				if fn == f.Name() {
+					indexFileName = fn
+					break
+				}
+			}
+		}
+
+		if indexFileName != "" {
+			f, err := d.FS.Open(urlPath + indexFileName)
+
+			if err == nil {
+				indexFile = f
+				defer f.Close()
+			}
 		}
 
 	}
