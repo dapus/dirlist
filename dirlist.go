@@ -11,7 +11,7 @@ import (
 )
 
 type DirList struct {
-	Dir http.Dir
+	FS http.FileSystem
 	UrlPrefix string
 	Tpl *template.Template
 	IndexFileName string
@@ -21,14 +21,12 @@ func (d *DirList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	urlPath := r.URL.Path[len(d.UrlPrefix):]
 	method := r.Method
 
-	log.Printf("%s %s", method, urlPath)
-
 	if method != "GET" {
 		http.NotFound(w, r)
 		return
 	}
 
-	file, err := d.Dir.Open(urlPath)
+	file, err := d.FS.Open(urlPath)
 
 	if err != nil {
 		http.NotFound(w, r)
@@ -61,12 +59,12 @@ func (d *DirList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	sort.Sort(FileSorter(files))
 
-	var indexFile *os.File
+	var indexFile http.File
 	{
-		f, err := d.Dir.Open(urlPath + d.IndexFileName)
+		f, err := d.FS.Open(urlPath + d.IndexFileName)
 
 		if err == nil {
-			indexFile = f.(*os.File)
+			indexFile = f
 		}
 
 	}
@@ -82,7 +80,7 @@ func (d *DirList) ServeFile(w http.ResponseWriter, r *http.Request, file http.Fi
 	}
 }
 
-func (d *DirList) ServeDir(w http.ResponseWriter, r *http.Request, files []os.FileInfo, index *os.File) {
+func (d *DirList) ServeDir(w http.ResponseWriter, r *http.Request, files []os.FileInfo, index http.File) {
 	context := &TplContext{
 		Files: files,
 		Index: index,
@@ -101,7 +99,7 @@ func (d *DirList) ServeDir(w http.ResponseWriter, r *http.Request, files []os.Fi
 
 type TplContext struct {
 	Files []os.FileInfo
-	Index *os.File
+	Index http.File
 	Url *url.URL
 	Host string
 }
