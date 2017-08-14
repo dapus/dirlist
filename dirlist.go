@@ -12,13 +12,12 @@ import (
 
 type DirList struct {
 	FS http.FileSystem
-	UrlPrefix string
 	Tpl *template.Template
 	IndexFiles []string
 }
 
 func (d *DirList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	urlPath := r.URL.Path[len(d.UrlPrefix):]
+	urlPath := r.URL.Path;
 	method := r.Method
 
 	if method != "GET" {
